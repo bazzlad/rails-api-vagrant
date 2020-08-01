@@ -1,0 +1,90 @@
+vagrant ssh
+
+# install keys for rvm
+gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 \
+7D2BAF1CF37B13E2069D6956105BD0E739499BDB
+
+# install rvm
+curl -sSL https://get.rvm.io | bash -s stable --ruby
+
+# enable rvm
+source /home/vagrant/.rvm/scripts/rvm
+
+# get latest stable
+rvm get stable --autolibs=enable
+
+# install ruby via rvm
+rvm install ruby-2.7.1
+
+# use this version
+rvm --default use ruby-2.7.1
+
+# dependencies 
+sudo apt install gcc g++ make
+
+# add node repository
+curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
+
+# update
+sudo apt update
+
+# install node
+sudo apt install nodejs
+
+# install yarn
+curl -o- -L https://yarnpkg.com/install.sh | bash
+
+# more yarn
+sudo apt install cmdtest
+
+# gemupdate
+gem update --system
+
+# new gem config
+echo "gem: --no-document" >> ~/.gemrc
+
+# install rails
+gem install rails
+
+# install postgresql (db)
+sudo apt install postgresql postgresql-contrib libpq-dev -y
+
+# start postgresql
+sudo service postgresql start
+
+# create database/user
+sudo -i -u postgres psql
+
+# create role
+create role rich_dev with createdb login password 'richpass';
+
+# check role
+\du
+
+# exit db
+\q
+
+# install rails as api
+rails new package-builder-api --api -d postgresql
+
+# enter project
+cd package-builder-api/
+
+# edit db details
+sudo nano config/database.yml
+
+# add these details into production AND test
+host: localhost
+port: 5432
+username: rich_dev
+password: richpass
+
+
+# get db up and running
+rails db:migrate
+rails db:setup
+
+# start server
+rails s -b 0.0.0.0 -p 3000
+
+# You should be live at 127.0.0.1:3000
