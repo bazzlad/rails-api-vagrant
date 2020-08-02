@@ -1,7 +1,3 @@
-Server:
-139.59.210.59
-123RubyOnRails
-
 # create scaffold (arrays must be text then serialized)
 
 rails g scaffold Hotel name:string tags:text packages:text
