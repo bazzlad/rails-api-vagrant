@@ -7,8 +7,9 @@ gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB8
 # install rvm
 curl -sSL https://get.rvm.io | bash -s stable --ruby
 
-# enable rvm
+# enable rvm (check the output from the install)
 source /home/vagrant/.rvm/scripts/rvm
+source /home/.rvm/scripts/rvm
 
 # get latest stable
 rvm get stable --autolibs=enable
@@ -20,7 +21,7 @@ rvm install ruby-2.7.1
 rvm --default use ruby-2.7.1
 
 # dependencies 
-sudo apt install gcc g++ make
+sudo apt install gcc g++ make -y
 
 # add node repository
 curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
@@ -29,13 +30,13 @@ curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
 sudo apt update
 
 # install node
-sudo apt install nodejs
+sudo apt install nodejs -y
 
 # install yarn
 curl -o- -L https://yarnpkg.com/install.sh | bash
 
 # more yarn
-sudo apt install cmdtest
+sudo apt install cmdtest -y
 
 # gemupdate
 gem update --system
@@ -56,7 +57,7 @@ sudo service postgresql start
 sudo -i -u postgres psql
 
 # create role
-create role rich_dev with createdb login password 'richpass';
+CREATE ROLE rich_dev WITH SUPERUSER CREATEDB CREATEROLE login password 'richpass';
 
 # check role
 \du
@@ -88,3 +89,9 @@ rails db:setup
 rails s -b 0.0.0.0 -p 3000
 
 # You should be live at 127.0.0.1:3000
+
+# running a server and leaving it going (sloppy)
+screen
+# navigate to directory
+rails s -b 0.0.0.0 -p 3000
+# -detach screen ctrl a + d

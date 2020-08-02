@@ -1,12 +1,36 @@
-# This file should contain all the record creation needed to seed the database with its default values.
-# The data can then be loaded with the rails db:seed command (or created alongside the database with db:setup).
-#
-# Examples:
-#
-#   movies = Movie.create([{ name: 'Star Wars' }, { name: 'Lord of the Rings' }])
-#   Character.create(name: 'Luke', movie: movies.first)
+Server:
+139.59.210.59
+123RubyOnRails
+
+# create scaffold (arrays must be text then serialized)
+
+rails g scaffold Hotel name:string tags:text packages:text
+rails g scaffold Tags name:text description:text
+rails g scaffold Additions name:text tags:text
 
 
+# sort db
+rails db:migrate
+
+# move controller to api
+mv app/controllers/hotels_controller.rb app/controllers/api
+mv app/controllers/Tags_controller.rb app/controllers/api
+mv app/controllers/Additions_controller.rb app/controllers/api
+
+
+# fix routes.rb
+namespace :api do
+	resources :hotels
+end
+
+
+# update hotels_controller.rb
+line 1
+class Api::HotelsController < ApplicationController
+line 21
+location: api_hotel_url(@hotel)
+
+# add to seeds.rb
 # default hotels
 Hotel.create(
 	name: "Richard's Luxury B&B",
@@ -67,3 +91,23 @@ Addition.create(
 	name: '{"en-gb": "City Tour", "nl": "Stadstour"}',
 	tags: '[3]',
 )
+
+# seed db
+rails db:seed
+
+
+
+Helpers
+
+
+# remove bad scaffold
+rails destroy scaffold hotel
+
+# roll back db if needed
+rake db:rollback
+
+# nuke db
+rake db:drop db:create db:migrate
+
+# view all routes
+rake routes

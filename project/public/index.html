@@ -1,0 +1,338 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+	<meta charset="utf-8">
+	<title>Package Builder</title>
+
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<meta property="og:title" content="">
+	<meta property="og:type" content="">
+	<meta property="og:url" content="">
+	<meta property="og:image" content="">
+
+	<!--<link rel="manifest" href="site.webmanifest">-->
+	<link rel="apple-touch-icon" href="icon.png">
+	<!-- Place favicon.ico in the root directory -->
+
+	<link rel="stylesheet" href="/content/css/main.min.css">
+	<meta name="theme-color" content="#fafafa">
+</head>
+<body>
+
+	<div class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom">
+		<h5 class="my-0 mr-md-auto font-weight-normal">
+			<a class="text-dark" href="/">Luxury Hotel Company</a>
+		</h5>
+		<a class="btn btn-outline-info" onclick="app.switchLang()">Change Language</a>
+	</div>
+
+	<!-- Main app starts here -->
+	<div class="container pb-md-5">
+		<div id="app" v-cloak>
+			<!-- add hotel stepper -->
+			<div id="setup-wizard" class="stepper">
+				<!-- step 1 -->
+				<div class="step">
+					<p class="lead float-right">Step 1 of 2</p>
+					<h1 class="display-5">Add Hotel</h1>
+					<hr />
+					<h5>Adding a new hotel</h5>
+					<p>Let us walk you through adding a new hotel, themes and packages. It's simple.</p>
+					<hr />
+					<div class="form-group">
+						<label for="pkgTitle-en-gb">What is the name of your hotel</label>
+						<input type="text" class="form-control" v-model="hotelName">
+						<small class="form-text text-muted">
+							Your hotel name must be at least 3 characters long and must not contain spaces, special characters, or emoji.
+						</small>
+					</div>
+				</div>
+				<!-- step 2 -->
+				<div class="step">
+					<p class="lead float-right">Step 2 of 2</p>
+					<h1 class="display-5">Add Themes</h1>
+					<hr />
+					<h5>Adding Themes to your hotel</h5>
+					<p>Themes help the customer to know more about your hotel, and for our search functions to show your hotel at the right times. Add as many themes as are relevant for your hotel.</p>
+					
+					<hr />
+					
+					<p class="helper-text">Click the theme to add it your hotel</p>
+					<p><strong>Available Themes</strong></p>
+					<div v-if="hotelTags == 0">
+						<p>No themes available</p>
+					</div>
+					<div v-else>
+						<div class="list-group mb-4">
+							<a class="list-group-item list-group-item-action" 
+								v-for="(tag, i) in hotelTags" 
+								@click="addTagToNewHotel(tag.id)"
+								href="#"
+							>
+								<p class="mb-0"><strong>{{ tag.name[lang] }}</strong><br />
+									{{ tag.description[lang] }}
+								</p>
+							</a>
+						</div>
+					</div>
+					
+					<p class="helper-text">Click the theme to remove it</p>
+					<p><strong>Selected Themes</strong></p>
+					<div v-if="hotelSelectedTags == 0">
+						<p>No themes selected</p>
+					</div>
+					<div v-else>
+						<div class="list-group mb-4">
+							<a class="list-group-item list-group-item-action" 
+								v-for="(tag, i) in hotelSelectedTags" 
+								@click="removeTagFromNewHotel(tag.id)"
+								href="#"
+							>
+								<p class="mb-0"><strong>{{ tag.name[lang] }}</strong><br />
+									{{ tag.description[lang] }}
+								</p>
+							</a>
+						</div>
+					</div>		
+				</div>
+				<div class="step-nav group">
+					<div class="container">
+						<a href="#" class="btn btn-success step-forward">Next &raquo;</a>
+						<a href="#" class="btn btn-success step-finish">Complete</a>
+						<a href="#" class="btn btn-danger step-back">&laquo; Previous</a>
+					</div>
+				</div>
+			</div>
+
+			<div id="vp-add-package" class="vp-screen">
+				<h1 class="display-5 text-center">Add Package</h1>
+				<div class="form-group">
+					<label for="pkgTitle-en-gb">Package Name (English)</label>
+					<input type="text" class="form-control" v-model="pkgTitle_en_gb">
+				</div>
+				<div class="form-group">
+					<label for="pkgTitle-nl">Package Name (Nederlands)</label>
+					<input type="text" class="form-control" v-model="pkgTitle_nl">
+				</div>
+				<div class="form-group">
+					<label for="pkgDescription-en-gb">Package Description (English)</label>
+					<textarea class="form-control" v-model="pkgDescription_en_gb" rows="3"></textarea>
+				</div>
+				<div class="form-group">
+					<label for="pkgDescription-nl">Package Description (Nederlands)</label>
+					<textarea class="form-control" v-model="pkgDescription_nl" rows="3"></textarea>
+				</div>
+				
+				<div class="card mb-4 mt-4 bg-light-warning">
+					<div class="card-body">
+						<h4>Add Benefits to your package</h4>
+						<p class="lead">You can add as many benefits as you want</p>
+						<div class="form-group">
+						<label for="pkgAdditionSelect">Select Benefit</label>
+							<select class="form-control" id="pkgAdditionSelect">
+								<option v-for="(addition, i) in availableAdditions" :value="addition.id">
+									{{addition.name[lang]}}
+								</option>
+							</select>
+						</div>
+						<button type="button" class="btn btn-dark" @click="addAddition">Add Benefit</button>
+
+						<p class="mt-4 mb-0"><strong>Added Benefits:</strong></p>
+						<div class="currentBenefits">
+							<span v-if="selectedAdditions.length == 0">
+								No Benefits Selected
+							</span>
+							<span v-else>
+								<span v-for="(addition, i) in selectedAdditions">
+									<a href="#" class="badge badge-dark mr-1" @click="removeAddition(addition.id)">
+										{{ 
+											addition.name[lang]
+										}} &#x292B;
+									</a>
+								</span>
+							</span>
+						</div>
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label for="pkgCurrentCost">Current Package Cost</label>
+					<div class="input-group">
+						<div class="input-group-prepend">
+						<div class="input-group-text">€</div>
+						</div>
+						<input type="text" class="form-control" v-model="pkgCurrentCost" @keyUp="calculateDiscount">
+					</div>
+					<small class="form-text text-muted">
+						The price of the package <strong>BEFORE</strong> the discount is applied
+					</small>
+				</div>
+				<div class="form-group">
+					<label for="pkgDiscount">Discount Percentage</label>
+					<div class="input-group">
+						<input type="text" class="form-control" v-model="pkgDiscount" @keyUp="calculateDiscount">
+						<div class="input-group-append">
+							<div class="input-group-text">%</div>
+						</div>
+					</div>
+					<small class="form-text text-muted">
+						The discount you're going to apply <strong>IN PERCENT</strong>
+					</small>
+				</div>
+				<div class="form-group">
+					<label for="pkgActualCost">Actual Cost (after discount)</label>
+					<div class="input-group">
+						<div class="input-group-prepend">
+						<div class="input-group-text">€</div>
+						</div>
+						<input type="text" class="form-control" v-model="pkgActualCost" disabled>
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="pkgAvailable">Quantity Available</label>
+					<input type="text" class="form-control" v-model="pkgAvailable">
+				</div>
+				
+				<button type="button" class="btn btn-outline-primary" @click="savePackage">
+					Save Package
+				</button>
+
+				<button type="button" class="btn btn-outline-danger float-right" @click="cancelPackage">
+					Cancel
+				</button>
+			</div>
+
+			<div id="vp-main" class="vp-screen text-center">
+				<span v-if="hotelLoaded">
+					<h1 class="display-5">{{ hotel.name }}</h1>
+
+					<h4 class="mt-4">Current Themes</h4>
+					<button type="button" class="btn btn-sm btn-outline-dark mb-4" @click="addTag">Add New Hotel Theme</button>
+
+					<div class="tags">
+						<span v-for="(tag, i) in hotel.tags">
+							<a href="#" class="badge badge-dark mr-1" @click="removeTag(i)">
+								{{ 
+									getTagName(tag)
+								}} &#x292B;
+							</a>
+						</span>
+					</div>
+
+					<hr />
+
+					<h4 class="mt-4">Current Packages</h4>
+					<button type="button" class="btn btn-sm btn-outline-dark mb-4" @click="addPackage">Add New Package</button>
+
+					<div class="packages">
+						<div class="row" v-if="hotelHasPackages">
+							<div class="col-sm-4" v-for="(package, i) in hotel.packages">
+								<!-- package display -->
+								<div class="card">
+									<div class="card-body">
+										<h5 class="card-title">
+											{{ package.title[lang] }}
+										</h5>
+										<hr />
+										<span class="badge badge-success mb-3">
+											Available
+										</span>
+										<p class="card-text">
+											{{ package.description[lang] }}
+										</p>
+
+										<div v-for="(addition, j) in package.additions">
+											<a href="#" class="badge badge-dark mr-1">
+												{{ 
+													getAdditionName(addition)
+												}}
+											</a>
+										</div>
+
+										<br />
+
+										<table class="table">
+											<tr>
+												<td>Cost</td>
+												<td>€{{ package.current_cost }}</td>
+											</tr>
+											<tr>
+												<td>Discount</td>
+												<td>{{ package.discount }}%</td>
+											</tr>
+											<tr>
+												<td>List Price</td>
+												<td>€{{ package.actual_cost }}</td>
+											</tr>
+											<tr>
+												<td>Available</td>
+												<td>{{ package.available }}</td>
+											</tr>
+											<tr>
+												<td>Sold</td>
+												<td>{{ package.sold }}</td>
+											</tr>
+										</table>
+
+										<a href="#" @click="deletePackage(i)" class="card-link text-danger">Delete Package</a>
+										<a href="#" @click="editPackage(i)" class="card-link">Edit Package</a>
+									</div>
+								</div>
+
+							</div>
+						</div>
+						<div v-else>
+							No Packages Available.
+						</div>
+					</div>
+				</span>
+				<span v-else>
+					<h4 class="display-5">Packages</h4>
+					<p class="lead">
+						Please select a hotel from the menu.
+					</p>
+
+					<div class="list-group">
+						<a class="list-group-item list-group-item-action" 
+							v-for="(hotel, i) in hotelList" 
+							:href="getHotelLink(hotel.id)"
+							:key="hotelIndex"
+						>
+							{{ hotel.name }}
+						</a>
+					</div>
+
+					<div class="list-group pt-4">
+						<a href="#" class="list-group-item list-group-item-action active" @click="addNewHotel()">
+							Add New Hotel
+						</a>
+					</div>
+
+
+				</span>
+			</div>
+		</div>
+	</div>
+
+	<div class="container">
+		<footer class="pt-4 my-md-5 border-top">
+			<div class="col-12 col-md">
+				<small class="d-block mb-3 text-muted">Created by BarringtonMedia</small>
+			</div>
+		</footer>
+	</div>
+
+	<script src="/content/js/vendor.min.js"></script>
+	<script src="/content/js/main.min.js"></script>
+
+	<!-- Google Analytics: change UA-XXXXX-Y to be your site's ID. 
+	<script>
+		window.ga = function () { ga.q.push(arguments) }; ga.q = []; ga.l = +new Date;
+		ga('create', 'UA-XXXXX-Y', 'auto'); ga('set', 'anonymizeIp', true); ga('set', 'transport', 'beacon'); ga('send', 'pageview')
+	</script>
+	<script src="https://www.google-analytics.com/analytics.js" async></script>-->
+</body>
+</html>
